@@ -4,7 +4,9 @@ import socket
 from requests import get, post
 import os
 import sys
-
+import pywifi
+from pywifi import const
+import time
 
 class shuConnect:
     def __init__(self, user, passwd):
@@ -92,11 +94,35 @@ def connect_wire(id, pwd):
         except:
             pass
     print("有线网连接失败，尝试无线网")
+    connect_wifi() #预先链接Shu（ForAll）
     if (shuConnect(id, pwd).start_connect()):
         print("无线网认证成功")
     else:
         print("有线无线 网络认证失败")
 
+
+def connect_wifi():
+    wifi = pywifi.PyWiFi() 
+    interFace = wifi.interfaces()[0] 
+    print(interFace.name()) 
+    interFace.disconnect() 
+    profile = pywifi.Profile()  
+    profile.ssid = "Shu(ForAll)" 
+    profile.akm.append(const.AUTH_ALG_OPEN)  
+    profile.cipher = const.CIPHER_TYPE_CCMP 
+
+    tmp_profile = interFace.add_network_profile(profile)  
+
+    interFace.connect(tmp_profile)  
+    time.sleep(5) 
+    isok = True
+    if interFace.status() == const.IFACE_CONNECTED:
+        print("成功连接")
+    else:
+        print("失败")
+    #ifaces.disconnect()  # 断开连接
+    time.sleep(1)
+    return isok
 
 if __name__ == '__main__':
     if "win" in sys.platform:
@@ -106,4 +132,6 @@ if __name__ == '__main__':
     if ret == 0:
         print("本机已联网")
     else:
-        connect_wire(00000000, "xxxxxx")
+        connect_wire(00000000, "xxxxxxxx")
+        
+
